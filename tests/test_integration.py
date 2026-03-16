@@ -11,6 +11,7 @@ Usage:
 
 import os
 import time
+
 import pytest
 
 from permissio import Permissio
@@ -108,9 +109,7 @@ class TestIntegration:
     # 2. Users CRUD ----------------------------------------------------------
 
     def test_02_create_user(self, client):
-        user = client.api.users.create(
-            {"key": USER_KEY, "first_name": "Integration", "last_name": "Test"}
-        )
+        user = client.api.users.create({"key": USER_KEY, "first_name": "Integration", "last_name": "Test"})
         assert user.key == USER_KEY
 
     def test_03_list_users(self, client):
@@ -124,17 +123,13 @@ class TestIntegration:
 
     def test_05_sync_user_via_api(self, client):
         """api.users.sync() should create-or-update."""
-        user = client.api.users.sync(
-            {"key": USER_KEY, "first_name": "Synced", "last_name": "User"}
-        )
+        user = client.api.users.sync({"key": USER_KEY, "first_name": "Synced", "last_name": "User"})
         assert user.key == USER_KEY
 
     # 3. Tenants CRUD --------------------------------------------------------
 
     def test_06_create_tenant(self, client):
-        tenant = client.api.tenants.create(
-            {"key": TENANT_KEY, "name": f"Tenant {TS}"}
-        )
+        tenant = client.api.tenants.create({"key": TENANT_KEY, "name": f"Tenant {TS}"})
         assert tenant.key == TENANT_KEY
 
     def test_07_list_tenants(self, client):
@@ -190,17 +185,13 @@ class TestIntegration:
     # 6. Role Assignments ----------------------------------------------------
 
     def test_14_assign_role(self, client):
-        assignment = client.api.role_assignments.assign(
-            USER_KEY, ROLE_KEY, tenant=TENANT_KEY
-        )
+        assignment = client.api.role_assignments.assign(USER_KEY, ROLE_KEY, tenant=TENANT_KEY)
         assert assignment.user_key == USER_KEY
         assert assignment.role_key == ROLE_KEY
 
     def test_15_list_role_assignments(self, client):
         resp = client.api.role_assignments.list(user=USER_KEY, per_page=50)
-        found = any(
-            a.user_key == USER_KEY and a.role_key == ROLE_KEY for a in resp.data
-        )
+        found = any(a.user_key == USER_KEY and a.role_key == ROLE_KEY for a in resp.data)
         assert found, f"Expected assignment for {USER_KEY}/{ROLE_KEY} in list"
 
     # 7. check() – allowed ---------------------------------------------------
@@ -223,12 +214,12 @@ class TestIntegration:
         The backend has no dedicated /v1/allowed/.../bulk endpoint,
         so we verify by calling check() for each case individually.
         """
-        read_allowed   = client.check(USER_KEY, "read",   RESOURCE_KEY, tenant=TENANT_KEY)
-        write_allowed  = client.check(USER_KEY, "write",  RESOURCE_KEY, tenant=TENANT_KEY)
+        read_allowed = client.check(USER_KEY, "read", RESOURCE_KEY, tenant=TENANT_KEY)
+        write_allowed = client.check(USER_KEY, "write", RESOURCE_KEY, tenant=TENANT_KEY)
         delete_allowed = client.check(USER_KEY, "delete", RESOURCE_KEY, tenant=TENANT_KEY)
 
-        assert read_allowed   is True,  "read should be allowed"
-        assert write_allowed  is False, "write should be denied (not in role perms)"
+        assert read_allowed is True, "read should be allowed"
+        assert write_allowed is False, "write should be denied (not in role perms)"
         assert delete_allowed is False, "delete should be denied"
 
     # 10. getPermissions() – roles + permissions via users.get_roles() -------
@@ -250,9 +241,7 @@ class TestIntegration:
 
     def test_20_sync_user_convenience(self, client):
         """client.sync_user() is a convenience wrapper around api.users.sync()."""
-        user = client.sync_user(
-            {"key": USER_KEY, "first_name": "Convenience", "last_name": "Sync"}
-        )
+        user = client.sync_user({"key": USER_KEY, "first_name": "Convenience", "last_name": "Sync"})
         assert user.key == USER_KEY
 
     # 12. Role Assignment unassign – verify removed --------------------------
@@ -263,9 +252,7 @@ class TestIntegration:
 
         # Verify it's gone
         resp = client.api.role_assignments.list(user=USER_KEY, per_page=50)
-        still_assigned = any(
-            a.user_key == USER_KEY and a.role_key == ROLE_KEY for a in resp.data
-        )
+        still_assigned = any(a.user_key == USER_KEY and a.role_key == ROLE_KEY for a in resp.data)
         assert not still_assigned, "Role should be removed after unassign"
 
     def test_22_check_denied_after_unassign(self, client):
